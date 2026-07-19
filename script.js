@@ -1,21 +1,18 @@
 const scene = new THREE.Scene();
 
-
 scene.fog = new THREE.Fog(
     0x050505,
-    20,
-    120
+    30,
+    150
 );
-
 
 
 const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth/window.innerHeight,
-    .1,
+    70,
+    window.innerWidth / window.innerHeight,
+    0.1,
     1000
 );
-
 
 
 const renderer = new THREE.WebGLRenderer({
@@ -29,50 +26,8 @@ renderer.setSize(
 );
 
 
-renderer.shadowMap.enabled=true;
-
-
 document.body.appendChild(
     renderer.domElement
-);
-
-
-
-// Bloom system
-
-const composer =
-new THREE.EffectComposer(renderer);
-
-
-const renderPass =
-new THREE.RenderPass(
-    scene,
-    camera
-);
-
-
-composer.addPass(
-    renderPass
-);
-
-
-const bloom =
-new THREE.UnrealBloomPass(
-
-    new THREE.Vector2(
-        window.innerWidth,
-        window.innerHeight
-    ),
-
-    2.5,
-    0.8,
-    0.1
-
-);
-
-
-composer.addPass(
-    bloom
 );
 
 
@@ -81,45 +36,76 @@ composer.addPass(
 
 camera.position.set(
     0,
-    10,
-    25
+    12,
+    30
 );
-
 
 camera.lookAt(
     0,
-    2,
+    3,
     0
 );
 
 
 
-// Light
+// Lights
 
-const light =
+const ambient =
+new THREE.AmbientLight(
+    0x222222
+);
+
+scene.add(ambient);
+
+
+
+const explosionLight =
 new THREE.PointLight(
     0xff3300,
-    150,
+    0,
     300
 );
 
+explosionLight.position.y = 4;
 
-light.position.y=3;
-
-
-scene.add(light);
+scene.add(explosionLight);
 
 
 
-// Fire
+// Ground
+
+const ground =
+new THREE.Mesh(
+
+    new THREE.PlaneGeometry(
+        150,
+        150
+    ),
+
+    new THREE.MeshStandardMaterial({
+        color:0x111111
+    })
+
+);
+
+
+ground.rotation.x =
+-Math.PI/2;
+
+
+scene.add(ground);
+
+
+
+// Fireball
 
 const fireball =
 new THREE.Mesh(
 
     new THREE.SphereGeometry(
         1,
-        128,
-        128
+        64,
+        64
     ),
 
     new THREE.MeshStandardMaterial({
@@ -137,12 +123,41 @@ new THREE.Mesh(
 
 fireball.position.y=3;
 
-
 scene.add(fireball);
 
 
 
-// Systems
+// Glow
+
+const glow =
+new THREE.Mesh(
+
+    new THREE.SphereGeometry(
+        1.2,
+        32,
+        32
+    ),
+
+    new THREE.MeshBasicMaterial({
+
+        color:0xffaa00,
+
+        transparent:true,
+
+        opacity:.4
+
+    })
+
+);
+
+
+glow.position.y=3;
+
+scene.add(glow);
+
+
+
+// Effects
 
 createParticles(scene);
 
@@ -150,51 +165,86 @@ createSmoke(scene);
 
 createShockwave(scene);
 
+createHeat(scene);
 
 
-// Explosion
 
-let size=.1;
+// Button
+
+let detonated=false;
+
+
+document.getElementById("detonate").onclick=function(){
+
+
+    if(detonated)
+        return;
+
+
+    detonated=true;
+
+
+    explosionSound();
+
+
+    setTimeout(
+        rumbleSound,
+        1500
+    );
+
+
+    explode();
+
+};
+
+
+
 
 
 function explode(){
 
-    size+=.15;
+    let size=.1;
 
 
-    fireball.scale.set(
-        size,
-        size,
-        size
-    );
+    let timer=setInterval(()=>{
 
 
-    light.intensity+=.5;
+        size+=.18;
 
 
-
-    if(size<6){
-
-        requestAnimationFrame(
-            explode
+        fireball.scale.set(
+            size,
+            size,
+            size
         );
 
-    }
 
-    else{
+        glow.scale.set(
+            size*1.2,
+            size*1.2,
+            size*1.2
+        );
 
-        shakeCamera(3);
 
-    }
+        explosionLight.intensity += 5;
+
+
+
+        if(size>6){
+
+            clearInterval(timer);
+
+            shakeCamera(4);
+
+        }
+
+
+    },16);
 
 }
 
 
-explode();
 
-
-
-// Render
 
 function animate(){
 
@@ -210,9 +260,14 @@ function animate(){
     updateEffects(camera);
 
 
-    composer.render();
+
+    renderer.render(
+        scene,
+        camera
+    );
 
 }
+
 
 
 animate();
@@ -223,8 +278,10 @@ window.addEventListener(
 "resize",
 ()=>{
 
-camera.aspect=
-window.innerWidth/window.innerHeight;
+
+camera.aspect =
+window.innerWidth /
+window.innerHeight;
 
 
 camera.updateProjectionMatrix();
@@ -234,5 +291,6 @@ renderer.setSize(
 window.innerWidth,
 window.innerHeight
 );
+
 
 });
