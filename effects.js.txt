@@ -1,0 +1,179 @@
+let shakeAmount = 0;
+
+let shockwave;
+
+let heatWave;
+
+
+
+function createShockwave(scene){
+
+
+    shockwave =
+    new THREE.Mesh(
+
+        new THREE.RingGeometry(
+            .5,
+            .8,
+            128
+        ),
+
+
+        new THREE.MeshBasicMaterial({
+
+            color:0xff8800,
+
+            transparent:true,
+
+            opacity:.8,
+
+            side:THREE.DoubleSide
+
+        })
+
+    );
+
+
+
+    shockwave.rotation.x =
+    Math.PI/2;
+
+
+
+    shockwave.position.y =
+    .05;
+
+
+
+    scene.add(shockwave);
+
+
+}
+
+
+
+
+
+function createHeat(scene){
+
+
+    heatWave =
+    new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            20,
+            20
+        ),
+
+
+        new THREE.MeshBasicMaterial({
+
+            color:0xff5500,
+
+            transparent:true,
+
+            opacity:0
+
+        })
+
+    );
+
+
+
+    heatWave.position.z =
+    -5;
+
+
+
+    scene.add(heatWave);
+
+
+}
+
+
+
+
+
+function shakeCamera(amount){
+
+    shakeAmount = amount;
+
+}
+
+
+
+
+
+function updateEffects(camera){
+
+
+
+    // Camera shake
+
+    if(shakeAmount > 0){
+
+
+        camera.position.x =
+        (Math.random()-.5)
+        * shakeAmount;
+
+
+        camera.position.y =
+        12 +
+        (Math.random()-.5)
+        * shakeAmount;
+
+
+
+        shakeAmount *= .92;
+
+
+    }
+    else{
+
+
+        camera.position.x = 0;
+
+
+    }
+
+
+
+
+
+    // Shockwave
+
+    if(shockwave){
+
+
+        shockwave.scale.multiplyScalar(
+            1.03
+        );
+
+
+        shockwave.material.opacity -=
+        .003;
+
+
+    }
+
+
+
+
+
+    // Heat shimmer
+
+    if(heatWave){
+
+
+        heatWave.material.opacity =
+
+        Math.sin(
+            Date.now()*.01
+        )*.05;
+
+
+    }
+
+
+}
