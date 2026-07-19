@@ -2,15 +2,15 @@
 <html>
 
 <head>
+
 <title>Nuclear Test Simulator</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
-<body>
 
-<button id="detonate">
-☢ DETONATE
-</button>
+<body>
 
 
 <div id="title">
@@ -18,8 +18,13 @@ NUCLEAR TEST RANGE
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<button id="detonate">
+☢ DETONATE
+</button>
 
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/postprocessing/EffectComposer.js"></script>
 
