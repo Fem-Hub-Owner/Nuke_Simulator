@@ -1,17 +1,18 @@
 const scene = new THREE.Scene();
 
+
 scene.fog = new THREE.Fog(
     0x050505,
-    30,
-    150
+    20,
+    120
 );
 
 
 
 const camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.1,
+    75,
+    window.innerWidth/window.innerHeight,
+    .1,
     1000
 );
 
@@ -28,7 +29,7 @@ renderer.setSize(
 );
 
 
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled=true;
 
 
 document.body.appendChild(
@@ -37,80 +38,80 @@ document.body.appendChild(
 
 
 
+// Bloom system
+
+const composer =
+new THREE.EffectComposer(renderer);
+
+
+const renderPass =
+new THREE.RenderPass(
+    scene,
+    camera
+);
+
+
+composer.addPass(
+    renderPass
+);
+
+
+const bloom =
+new THREE.UnrealBloomPass(
+
+    new THREE.Vector2(
+        window.innerWidth,
+        window.innerHeight
+    ),
+
+    2.5,
+    0.8,
+    0.1
+
+);
+
+
+composer.addPass(
+    bloom
+);
+
+
+
 // Camera
 
 camera.position.set(
     0,
-    12,
-    30
+    10,
+    25
 );
+
 
 camera.lookAt(
     0,
-    3,
+    2,
     0
 );
 
 
 
-// Environment light
+// Light
 
-const ambient =
-new THREE.AmbientLight(
-    0x222222
-);
-
-scene.add(ambient);
-
-
-
-// Explosion light
-
-const explosionLight =
+const light =
 new THREE.PointLight(
     0xff3300,
-    0,
+    150,
     300
 );
 
-explosionLight.position.y = 4;
 
-scene.add(explosionLight);
-
+light.position.y=3;
 
 
-// Ground
-
-const ground =
-new THREE.Mesh(
-
-    new THREE.PlaneGeometry(
-        150,
-        150
-    ),
-
-    new THREE.MeshStandardMaterial({
-
-        color:0x111111,
-        roughness:1
-
-    })
-
-);
-
-
-ground.rotation.x =
--Math.PI/2;
-
-
-ground.receiveShadow=true;
-
-
-scene.add(ground);
+scene.add(light);
 
 
 
-// Fireball
+// Fire
 
 const fireball =
 new THREE.Mesh(
@@ -141,70 +142,7 @@ scene.add(fireball);
 
 
 
-// Glow layer
-
-const glow =
-new THREE.Mesh(
-
-    new THREE.SphereGeometry(
-        1.2,
-        64,
-        64
-    ),
-
-    new THREE.MeshBasicMaterial({
-
-        color:0xffaa00,
-
-        transparent:true,
-
-        opacity:.4
-
-    })
-
-);
-
-
-glow.position.y=3;
-
-
-scene.add(glow);
-
-
-
-// Bloom
-
-const composer =
-new THREE.EffectComposer(renderer);
-
-
-composer.addPass(
-new THREE.RenderPass(
-    scene,
-    camera
-));
-
-
-composer.addPass(
-
-new THREE.UnrealBloomPass(
-
-    new THREE.Vector2(
-        window.innerWidth,
-        window.innerHeight
-    ),
-
-    2,
-
-    0.8,
-
-    0.1
-
-));
-
-
-
-// Connect systems
+// Systems
 
 createParticles(scene);
 
@@ -212,99 +150,53 @@ createSmoke(scene);
 
 createShockwave(scene);
 
-createHeat(scene);
 
 
+// Explosion
 
-// Detonation
-
-let detonated=false;
-
-
-document
-.getElementById("detonate")
-.onclick=function(){
-
-
-    if(detonated)
-        return;
-
-
-    detonated=true;
-
-
-    explosionSound();
-
-
-    setTimeout(
-        rumbleSound,
-        1500
-    );
-
-
-
-    explode();
-
-};
-
-
-
+let size=.1;
 
 
 function explode(){
 
-
-    let size=.1;
-
+    size+=.15;
 
 
-    let timer=setInterval(()=>{
+    fireball.scale.set(
+        size,
+        size,
+        size
+    );
 
 
-        size+=.18;
+    light.intensity+=.5;
 
 
 
-        fireball.scale.set(
-            size,
-            size,
-            size
+    if(size<6){
+
+        requestAnimationFrame(
+            explode
         );
 
+    }
 
-        glow.scale.set(
-            size*1.2,
-            size*1.2,
-            size*1.2
-        );
+    else{
 
+        shakeCamera(3);
 
-        explosionLight.intensity += 5;
-
-
-
-        if(size>6){
-
-            clearInterval(timer);
-
-
-            shakeCamera(4);
-
-        }
-
-
-
-    },16);
-
+    }
 
 }
 
 
+explode();
 
 
+
+// Render
 
 function animate(){
-
 
     requestAnimationFrame(
         animate
@@ -318,9 +210,7 @@ function animate(){
     updateEffects(camera);
 
 
-
     composer.render();
-
 
 }
 
@@ -329,27 +219,20 @@ animate();
 
 
 
-
-// Resize
-
 window.addEventListener(
 "resize",
 ()=>{
 
-
-camera.aspect =
-window.innerWidth /
-window.innerHeight;
+camera.aspect=
+window.innerWidth/window.innerHeight;
 
 
 camera.updateProjectionMatrix();
-
 
 
 renderer.setSize(
 window.innerWidth,
 window.innerHeight
 );
-
 
 });
